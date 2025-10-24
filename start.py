@@ -4,10 +4,9 @@ Solo para testing local, NO se usa en producción
 """
 
 import uvicorn
-from app.core.config import get_settings
+from app.core.config import settings
 
 if __name__ == "__main__":
-    settings = get_settings()
     print("=" * 60)
     print("  MicroSelectIA - Development Server")
     print("=" * 60)

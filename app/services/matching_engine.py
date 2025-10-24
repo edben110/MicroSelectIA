@@ -12,7 +12,7 @@ from ..schemas.matching import (
     RankedMatchResult,
 )
 from .ai_matcher import get_ai_matcher
-from ..core.config import get_settings
+from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,8 @@ class MatchingEngine:
     
     def __init__(self):
         """Initialize the matching engine"""
-        self.settings = get_settings()
-        self.ai_matcher = get_ai_matcher(self.settings.AI_MODEL)
+        self.settings = settings
+        self.ai_matcher = get_ai_matcher(settings.AI_MODEL)
         logger.info("Matching engine initialized")
     
     def calculate_skills_match(
@@ -253,11 +253,11 @@ class MatchingEngine:
         Returns:
             Quality level: 'low', 'medium', 'good', 'excellent'
         """
-        if score >= self.settings.EXCELLENT_MATCH_THRESHOLD:
+        if score >= self.settings.EXCELLENT_MATCH_SCORE:
             return "excellent"
-        elif score >= self.settings.GOOD_MATCH_THRESHOLD:
+        elif score >= self.settings.GOOD_MATCH_SCORE:
             return "good"
-        elif score >= self.settings.MIN_MATCH_THRESHOLD:
+        elif score >= self.settings.MIN_MATCH_SCORE:
             return "medium"
         else:
             return "low"

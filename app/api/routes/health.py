@@ -4,7 +4,7 @@ Health check endpoint
 
 from fastapi import APIRouter
 from datetime import datetime
-from ...core.config import get_settings
+from ...core.config import settings
 from ...services.ai_matcher import get_ai_matcher
 
 router = APIRouter()
@@ -17,7 +17,6 @@ async def health_check():
     
     Returns API status and model information
     """
-    settings = get_settings()
     ai_matcher = get_ai_matcher(settings.AI_MODEL)
     
     try:
