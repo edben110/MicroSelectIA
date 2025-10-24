@@ -7,7 +7,7 @@ services:
     plan: starter
     branch: main
     buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     
     envVars:
@@ -15,7 +15,7 @@ services:
       - key: API_HOST
         value: 0.0.0.0
       - key: API_PORT
-        value: 8000
+        sync: false
       - key: API_DEBUG
         value: false
       
@@ -45,7 +45,7 @@ services:
       
       # CORS - Update with your actual frontend URLs
       - key: CORS_ORIGINS
-        value: https://your-frontend.onrender.com,https://backend.sufactura.store,http://localhost:3000
+        value: http://localhost:3000,https://clipers.sufactura.store,https://backend.sufactura.store
       
       # Logging
       - key: LOG_LEVEL
@@ -54,20 +54,8 @@ services:
     # Disk for caching models (optional but recommended)
     disk:
       name: model-cache
-      mountPath: /opt/render/project/.cache
-      sizeGB: 1
+      mountPath: /opt/render/project/src/.cache
+      sizeGB: 2
     
     # Auto-scaling settings
     autoDeploy: true
-    
-    # Health check
-    healthCheckPath: /health
-    
-    # Custom headers (optional)
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
