@@ -1,0 +1,73 @@
+# Render deployment configuration for MicroSelectIA
+services:
+  - type: web
+    name: microselectia
+    env: python
+    region: oregon
+    plan: starter
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    healthCheckPath: /health
+    
+    envVars:
+      # API Settings
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: 8000
+      - key: API_DEBUG
+        value: false
+      
+      # AI Model Settings
+      - key: AI_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: AI_DEVICE
+        value: cpu
+      
+      # Matching Weights
+      - key: SKILLS_WEIGHT
+        value: 0.40
+      - key: EXPERIENCE_WEIGHT
+        value: 0.25
+      - key: SEMANTIC_WEIGHT
+        value: 0.25
+      - key: EDUCATION_WEIGHT
+        value: 0.10
+      
+      # Thresholds
+      - key: MIN_MATCH_THRESHOLD
+        value: 0.30
+      - key: GOOD_MATCH_THRESHOLD
+        value: 0.60
+      - key: EXCELLENT_MATCH_THRESHOLD
+        value: 0.80
+      
+      # CORS - Update with your actual frontend URLs
+      - key: CORS_ORIGINS
+        value: https://your-frontend.onrender.com,https://backend.sufactura.store,http://localhost:3000
+      
+      # Logging
+      - key: LOG_LEVEL
+        value: INFO
+    
+    # Disk for caching models (optional but recommended)
+    disk:
+      name: model-cache
+      mountPath: /opt/render/project/.cache
+      sizeGB: 1
+    
+    # Auto-scaling settings
+    autoDeploy: true
+    
+    # Health check
+    healthCheckPath: /health
+    
+    # Custom headers (optional)
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff

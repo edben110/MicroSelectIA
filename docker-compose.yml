@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  microselectia:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: microselectia
+    ports:
+      - "8000:8000"
+    environment:
+      # API Settings
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_DEBUG=false
+      
+      # AI Model Settings
+      - AI_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - AI_DEVICE=cpu
+      
+      # Matching Weights
+      - SKILLS_WEIGHT=0.40
+      - EXPERIENCE_WEIGHT=0.25
+      - SEMANTIC_WEIGHT=0.25
+      - EDUCATION_WEIGHT=0.10
+      
+      # Thresholds
+      - MIN_MATCH_THRESHOLD=0.30
+      - GOOD_MATCH_THRESHOLD=0.60
+      - EXCELLENT_MATCH_THRESHOLD=0.80
+      
+      # CORS
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,http://localhost:5173
+      
+      # Logging
+      - LOG_LEVEL=INFO
+    
+    volumes:
+      # Cache for downloaded models
+      - model_cache:/root/.cache/torch
+      - model_cache:/root/.cache/huggingface
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    networks:
+      - clipers-network
+
+volumes:
+  model_cache:
+    driver: local
+
+networks:
+  clipers-network:
+    name: clipers-network
+    driver: bridge
