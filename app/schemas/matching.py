@@ -2,9 +2,15 @@
 Pydantic models for request/response validation
 """
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional, Dict
 from enum import Enum
+
+
+def to_camel(string: str) -> str:
+    """Convert snake_case to camelCase"""
+    components = string.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
 
 
 class JobType(str, Enum):
@@ -79,6 +85,8 @@ class JobSchema(BaseModel):
 
 class MatchBreakdown(BaseModel):
     """Detailed breakdown of match scores"""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     skills_match: float = Field(..., ge=0, le=1, description="Score de coincidencia de habilidades")
     experience_match: float = Field(..., ge=0, le=1, description="Score de coincidencia de experiencia")
     education_match: float = Field(..., ge=0, le=1, description="Score de coincidencia de educación")
@@ -94,6 +102,8 @@ class SingleMatchRequest(BaseModel):
 
 class SingleMatchResponse(BaseModel):
     """Response for single candidate-job matching"""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     candidate_id: str
     candidate_name: str
     job_id: str
@@ -124,6 +134,8 @@ class BatchMatchRequest(BaseModel):
 
 class RankedMatchResult(BaseModel):
     """Individual match result with ranking"""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     candidate_id: str
     candidate_name: str
     compatibility_score: float = Field(..., ge=0, le=1)
@@ -139,6 +151,8 @@ class RankedMatchResult(BaseModel):
 
 class BatchMatchResponse(BaseModel):
     """Response for batch matching with ranked results"""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     job_id: str
     job_title: str
     total_candidates: int
@@ -156,6 +170,8 @@ class ExplainMatchRequest(BaseModel):
 
 class ExplainMatchResponse(BaseModel):
     """Detailed explanation of match"""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     candidate_id: str
     job_id: str
     compatibility_score: float

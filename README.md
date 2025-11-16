@@ -1,365 +1,149 @@
-# MicroSelectIA - Microservicio de Selección Inteligente de Candidatos
+# MicroSelectIA - AI Candidate Matching Service
 
-## 📝 Descripción
+Microservicio de IA para calcular compatibilidad entre candidatos y ofertas laborales usando procesamiento de lenguaje natural y machine learning.
 
-Microservicio de IA independiente para calcular la compatibilidad entre candidatos y ofertas laborales. Utiliza procesamiento de lenguaje natural y algoritmos de machine learning para generar scores de matching precisos.
+## Requisitos
 
-## 🚀 Características
+- Python 3.9+
+- pip
 
-- ✅ API REST independiente en Python
-- ✅ Análisis de compatibilidad con IA
-- ✅ Procesamiento de habilidades y experiencia
-- ✅ Cálculo de porcentajes de matching
-- ✅ Ordenamiento automático por compatibilidad
-- ✅ Explicaciones detalladas de cada match
-- ✅ Soporte para múltiples modelos de IA
-- ✅ Fácil deploy en Render
+## Instalación
 
-## 🛠️ Tecnologías
-
-- **Python 3.11+**
-- **FastAPI** - Framework web moderno y rápido
-- **Transformers** - Modelos de lenguaje (BERT, etc.)
-- **Scikit-learn** - Algoritmos de ML
-- **Sentence-Transformers** - Embeddings semánticos
-- **Pydantic** - Validación de datos
-- **Uvicorn** - Servidor ASGI
-
-## 📦 Instalación Local
-
-### 1. Crear entorno virtual
-
-```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-### 2. Instalar dependencias
-
+1. Instalar dependencias:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Ejecutar el servidor
+## Configuración
+
+El archivo `.env` ya está configurado con valores por defecto. Variables principales:
+
+- `API_PORT`: Puerto del servicio (default: 8000)
+- `API_HOST`: Host del servicio (default: 0.0.0.0)
+- `CORS_ORIGINS`: Orígenes permitidos para CORS (incluye http://localhost:8080 para el backend Java)
+
+## Ejecución
+
+### Opción 1: Script de inicio
+```bash
+python start.py
+```
+
+### Opción 2: Uvicorn directo
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Opción 3: Windows
+```bash
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+## Endpoints Disponibles
+
+Una vez iniciado, accede a:
+
+- **API Docs**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
+- **Match Single**: POST http://localhost:8000/api/match/single
+- **Match Batch**: POST http://localhost:8000/api/match/batch
+- **Explain Match**: POST http://localhost:8000/api/match/explain
+
+## Integración con Backend Java
+
+El backend Java (ClippersBackend) está configurado para conectarse a este servicio en:
+- URL: `http://localhost:8000`
+- Timeout: 30 segundos
+
+### Configuración en Backend Java
+
+En `application.properties`:
+```properties
+ai.matching.service.url=http://localhost:8000
+ai.matching.service.enabled=true
+ai.matching.service.timeout=30000
+```
+
+## Testing
+
+Ejecutar test de endpoints:
+```bash
+python test_api.py
+```
+
+O usar el endpoint de prueba:
+```bash
+curl -X POST http://localhost:8000/api/match/test
+```
+
+## Estructura del Proyecto
+
+```
+microSelectIA/
+├── app/
+│   ├── main.py              # Aplicación FastAPI
+│   ├── api/
+│   │   └── routes/
+│   │       ├── health.py    # Health check endpoints
+│   │       └── matching.py  # Matching endpoints
+│   ├── core/
+│   │   └── config.py        # Configuración
+│   ├── schemas/
+│   │   └── matching.py      # Modelos Pydantic
+│   └── services/
+│       ├── matching_engine.py # Motor de matching
+│       └── ai_matcher.py      # IA matching logic
+├── .env                     # Variables de entorno
+├── requirements.txt         # Dependencias Python
+└── start.py                # Script de inicio
+```
+
+## Estado del Servicio
+
+Para verificar que el servicio está funcionando:
 
 ```bash
-python main.py
+curl http://localhost:8000/health
 ```
 
-El servidor estará disponible en: `http://localhost:8000`
-
-## 🌐 API Endpoints
-
-### 1. Health Check
-
-```http
-GET /health
-```
-
-**Respuesta:**
+Respuesta esperada:
 ```json
 {
   "status": "healthy",
-  "version": "1.0.0",
-  "model": "sentence-transformers/all-MiniLM-L6-v2"
+  "service": "MicroSelectIA",
+  "version": "1.0.0"
 }
 ```
 
-### 2. Calcular Match Simple
+## Notas Importantes
 
-```http
-POST /api/match/single
-```
+1. **Primera Ejecución**: La primera vez que se ejecuta, descargará el modelo de IA (~90MB). Esto puede tomar unos minutos.
 
-**Request Body:**
-```json
-{
-  "candidate": {
-    "id": "candidate-uuid",
-    "name": "Juan Pérez",
-    "skills": ["Python", "FastAPI", "Docker"],
-    "experience_years": 3,
-    "education": [
-      {
-        "degree": "Ingeniería de Sistemas",
-        "institution": "Universidad XYZ"
-      }
-    ],
-    "languages": ["Español", "Inglés"],
-    "summary": "Desarrollador backend con 3 años de experiencia..."
-  },
-  "job": {
-    "id": "job-uuid",
-    "title": "Backend Developer",
-    "description": "Buscamos desarrollador backend con experiencia en Python...",
-    "skills": ["Python", "FastAPI", "PostgreSQL", "Docker"],
-    "requirements": ["3+ años de experiencia", "Inglés intermedio"],
-    "location": "Remoto",
-    "type": "FULL_TIME"
-  }
-}
-```
+2. **Memoria**: El servicio requiere al menos 2GB de RAM disponible para el modelo de IA.
 
-**Respuesta:**
-```json
-{
-  "candidate_id": "candidate-uuid",
-  "job_id": "job-uuid",
-  "compatibility_score": 0.87,
-  "match_percentage": 87,
-  "breakdown": {
-    "skills_match": 0.75,
-    "experience_match": 1.0,
-    "education_match": 0.85,
-    "semantic_match": 0.92
-  },
-  "matched_skills": ["Python", "FastAPI", "Docker"],
-  "missing_skills": ["PostgreSQL"],
-  "explanation": "Excelente compatibilidad. El candidato tiene 75% de las habilidades requeridas, experiencia suficiente y alta similitud semántica con la descripción del puesto.",
-  "recommendations": [
-    "Desarrollar habilidad en PostgreSQL",
-    "Destacar experiencia con Docker"
-  ]
-}
-```
+3. **CORS**: Ya está configurado para aceptar requests desde el backend Java (localhost:8080) y el frontend (localhost:3000).
 
-### 3. Calcular Matches Múltiples (Ranking)
+4. **Fallback**: El backend Java tiene lógica de fallback si este servicio no está disponible.
 
-```http
-POST /api/match/batch
-```
+## Solución de Problemas
 
-**Request Body:**
-```json
-{
-  "candidates": [
-    {
-      "id": "candidate-1",
-      "name": "Juan Pérez",
-      "skills": ["Python", "FastAPI", "Docker"],
-      "experience_years": 3,
-      "summary": "..."
-    },
-    {
-      "id": "candidate-2",
-      "name": "María García",
-      "skills": ["Python", "Django", "PostgreSQL"],
-      "experience_years": 5,
-      "summary": "..."
-    }
-  ],
-  "job": {
-    "id": "job-uuid",
-    "title": "Backend Developer",
-    "skills": ["Python", "FastAPI", "PostgreSQL"],
-    "requirements": ["3+ años"],
-    "description": "..."
-  }
-}
-```
-
-**Respuesta:**
-```json
-{
-  "job_id": "job-uuid",
-  "total_candidates": 2,
-  "matches": [
-    {
-      "candidate_id": "candidate-2",
-      "candidate_name": "María García",
-      "compatibility_score": 0.92,
-      "match_percentage": 92,
-      "rank": 1,
-      "breakdown": { ... },
-      "explanation": "..."
-    },
-    {
-      "candidate_id": "candidate-1",
-      "candidate_name": "Juan Pérez",
-      "compatibility_score": 0.87,
-      "match_percentage": 87,
-      "rank": 2,
-      "breakdown": { ... },
-      "explanation": "..."
-    }
-  ]
-}
-```
-
-### 4. Explicar Match (Detallado)
-
-```http
-POST /api/match/explain
-```
-
-Devuelve un análisis detallado de por qué un candidato es compatible o no.
-
-## 🧠 Algoritmos de Matching
-
-El microservicio utiliza múltiples estrategias de matching:
-
-### 1. **Skills Matching (40%)**
-- Calcula la intersección de habilidades
-- Usa embeddings semánticos para detectar similitudes (ej: "React" ≈ "React.js")
-- Penaliza habilidades faltantes críticas
-
-### 2. **Experience Matching (25%)**
-- Evalúa años de experiencia vs requerimientos
-- Analiza experiencia relevante en el campo
-- Considera progresión profesional
-
-### 3. **Semantic Matching (25%)**
-- Usa modelos de lenguaje (Sentence-BERT)
-- Compara el resumen del candidato con la descripción del trabajo
-- Detecta similitudes conceptuales
-
-### 4. **Education & Other (10%)**
-- Evalúa nivel educativo
-- Considera idiomas
-- Analiza ubicación geográfica
-
-## 🔧 Configuración
-
-Crear archivo `.env`:
-
-```env
-# API Settings
-API_PORT=8000
-API_HOST=0.0.0.0
-API_DEBUG=False
-
-# AI Model
-AI_MODEL=sentence-transformers/all-MiniLM-L6-v2
-AI_DEVICE=cpu  # o 'cuda' si tienes GPU
-
-# Weights (suma debe ser 1.0)
-SKILLS_WEIGHT=0.40
-EXPERIENCE_WEIGHT=0.25
-SEMANTIC_WEIGHT=0.25
-EDUCATION_WEIGHT=0.10
-
-# Thresholds
-MIN_MATCH_SCORE=0.30
-GOOD_MATCH_SCORE=0.60
-EXCELLENT_MATCH_SCORE=0.80
-
-# CORS
-CORS_ORIGINS=http://localhost:3000,http://localhost:8080,https://clipers.sufactura.store
-```
-
-## 🚀 Deploy en Render
-
-### 1. Crear `render.yaml`:
-
-```yaml
-services:
-  - type: web
-    name: microselectia
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
-    envVars:
-      - key: API_PORT
-        value: 10000
-      - key: PYTHON_VERSION
-        value: 3.11.0
-```
-
-### 2. Push a GitHub
-
+### Error: Puerto 8000 en uso
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin <your-repo>
-git push -u origin main
+# Windows
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+
+# Linux/Mac
+lsof -ti:8000 | xargs kill -9
 ```
 
-### 3. Conectar en Render
-
-1. Ir a render.com
-2. New -> Web Service
-3. Conectar repositorio
-4. Configurar variables de entorno
-5. Deploy!
-
-## 📊 Testing
-
-### Ejecutar tests
-
+### Error: Módulo no encontrado
 ```bash
-pytest tests/
+pip install -r requirements.txt --upgrade
 ```
 
-### Test de carga
-
-```bash
-python tests/load_test.py
+### Error: CUDA no disponible
+El servicio está configurado para usar CPU por defecto. Si tienes GPU compatible, cambia en `.env`:
 ```
-
-## 🔗 Integración con Backend Java
-
-El backend de Spring Boot debe llamar a este microservicio:
-
-```java
-@Service
-public class AIMatchingService {
-    
-    @Value("${ai.matching.service.url}")
-    private String aiServiceUrl;
-    
-    private final RestTemplate restTemplate;
-    
-    public List<JobMatchDTO> calculateMatches(Job job, List<User> candidates) {
-        String url = aiServiceUrl + "/api/match/batch";
-        
-        BatchMatchRequest request = new BatchMatchRequest();
-        request.setJob(convertJobToDTO(job));
-        request.setCandidates(convertCandidatesToDTO(candidates));
-        
-        ResponseEntity<BatchMatchResponse> response = 
-            restTemplate.postForEntity(url, request, BatchMatchResponse.class);
-        
-        return response.getBody().getMatches();
-    }
-}
+AI_DEVICE=cuda
 ```
-
-## 📈 Métricas y Monitoreo
-
-El microservicio expone métricas en:
-
-```http
-GET /metrics
-```
-
-Incluye:
-- Total de requests
-- Tiempo promedio de respuesta
-- Matches calculados
-- Errores
-
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea una branch (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Agrega nueva funcionalidad'`)
-4. Push a la branch (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-MIT License - Ver archivo LICENSE
-
-## 👥 Autores
-
-- Equipo Clippers
-
-## 📞 Soporte
-
-Para reportar bugs o solicitar features, abre un issue en GitHub.
