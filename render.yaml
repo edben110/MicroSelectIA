@@ -36,11 +36,11 @@ services:
         value: 0.10
       
       # Thresholds
-      - key: MIN_MATCH_THRESHOLD
+      - key: MIN_MATCH_SCORE
         value: 0.30
-      - key: GOOD_MATCH_THRESHOLD
+      - key: GOOD_MATCH_SCORE
         value: 0.60
-      - key: EXCELLENT_MATCH_THRESHOLD
+      - key: EXCELLENT_MATCH_SCORE
         value: 0.80
       
       # CORS - Update with your actual frontend URLs
