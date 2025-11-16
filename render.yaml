@@ -15,41 +15,57 @@ services:
       - key: API_HOST
         value: 0.0.0.0
       - key: API_PORT
-        sync: false
+        sync: false  # Render will provide this automatically via $PORT
       - key: API_DEBUG
-        value: false
+        value: "False"
+      - key: API_TITLE
+        value: MicroSelectIA - AI Candidate Matching Service
+      - key: API_VERSION
+        value: 1.0.0
+      - key: API_DESCRIPTION
+        value: Microservicio de IA para calcular compatibilidad entre candidatos y ofertas laborales
       
       # AI Model Settings
       - key: AI_MODEL
         value: sentence-transformers/all-MiniLM-L6-v2
       - key: AI_DEVICE
         value: cpu
+      - key: AI_MAX_LENGTH
+        value: "512"
       
       # Matching Weights
       - key: SKILLS_WEIGHT
-        value: 0.40
+        value: "0.40"
       - key: EXPERIENCE_WEIGHT
-        value: 0.25
+        value: "0.25"
       - key: SEMANTIC_WEIGHT
-        value: 0.25
+        value: "0.25"
       - key: EDUCATION_WEIGHT
-        value: 0.10
+        value: "0.10"
       
       # Thresholds
       - key: MIN_MATCH_SCORE
-        value: 0.30
+        value: "0.30"
       - key: GOOD_MATCH_SCORE
-        value: 0.60
+        value: "0.60"
       - key: EXCELLENT_MATCH_SCORE
-        value: 0.80
+        value: "0.80"
       
-      # CORS - Update with your actual frontend URLs
+      # CORS - Backend URLs
       - key: CORS_ORIGINS
-        value: http://localhost:3000,https://clipers.sufactura.store,https://backend.sufactura.store
+        value: http://localhost:3000,http://localhost:8080,https://clipers.sufactura.store,https://backend.sufactura.store
+      
+      # Cache Settings
+      - key: CACHE_ENABLED
+        value: "True"
+      - key: CACHE_TTL_SECONDS
+        value: "3600"
       
       # Logging
       - key: LOG_LEVEL
         value: INFO
+      - key: LOG_FORMAT
+        value: json
     
     # Disk for caching models (optional but recommended)
     disk:
