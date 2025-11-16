@@ -51,9 +51,11 @@ services:
       - key: EXCELLENT_MATCH_SCORE
         value: "0.80"
       
-      # CORS - Backend URLs
+      # CORS - Backend URLs (⚠️ CONFIGURA ESTO EN RENDER DASHBOARD)
+      # Para configurar: Dashboard > Environment > Add Environment Variable
+      # Ejemplo: https://mi-frontend.com,https://mi-backend.com
       - key: CORS_ORIGINS
-        value: http://localhost:3000,http://localhost:8080,https://clipers.sufactura.store,https://backend.sufactura.store
+        sync: false  # Render no sobrescribirá el valor que configures manualmente
       
       # Cache Settings
       - key: CACHE_ENABLED
