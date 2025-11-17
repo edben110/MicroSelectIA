@@ -1,45 +1,41 @@
-# Multi-stage build for optimized image size
-FROM python:3.11-slim as builder
-
-# Set working directory
-WORKDIR /app
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements
-COPY requirements.txt .
-
-# Install Python dependencies with CPU-only PyTorch
-RUN pip install --no-cache-dir --user --upgrade pip && \
-    pip install --no-cache-dir --user torch==2.5.1+cpu --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir --user -r requirements.txt --no-deps && \
-    pip install --no-cache-dir --user fastapi uvicorn pydantic pydantic-settings python-dotenv sentence-transformers scikit-learn numpy pandas transformers python-multipart httpx pytest pytest-asyncio
-
-# Final stage
 FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install runtime dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
+# Copy requirements
+COPY requirements.txt .
 
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
+# Install Python dependencies globally with CPU-only PyTorch
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir torch==2.5.1+cpu --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir \
+    fastapi==0.115.0 \
+    uvicorn[standard]==0.32.0 \
+    pydantic==2.9.2 \
+    pydantic-settings==2.6.0 \
+    python-dotenv==1.0.1 \
+    sentence-transformers==3.3.0 \
+    scikit-learn==1.5.2 \
+    numpy \
+    pandas==2.2.3 \
+    transformers==4.46.1 \
+    python-multipart==0.0.12 \
+    httpx==0.27.2 \
+    pytest==8.3.3 \
+    pytest-asyncio==0.24.0
 
 # Copy application code
 COPY . .
 
-# Create non-root user
+# Create non-root user and set permissions
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
