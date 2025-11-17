@@ -1,0 +1,32 @@
+{
+  "name": "MicroSelectIA",
+  "description": "Microservicio de IA para matching inteligente de candidatos y ofertas laborales",
+  "type": "docker-compose",
+  "dockerComposeFile": "docker-compose.yml",
+  "port": 8180,
+  "healthCheckPath": "/health",
+  "healthCheckInterval": 30,
+  "healthCheckTimeout": 10,
+  "healthCheckRetries": 3,
+  "healthCheckStartPeriod": 60,
+  "environment": {
+    "API_HOST": "0.0.0.0",
+    "API_DEBUG": "false",
+    "AI_MODEL": "sentence-transformers/all-MiniLM-L6-v2",
+    "AI_DEVICE": "cpu",
+    "SKILLS_WEIGHT": "0.40",
+    "EXPERIENCE_WEIGHT": "0.25",
+    "SEMANTIC_WEIGHT": "0.25",
+    "EDUCATION_WEIGHT": "0.10",
+    "MIN_MATCH_SCORE": "0.30",
+    "GOOD_MATCH_SCORE": "0.60",
+    "EXCELLENT_MATCH_SCORE": "0.80",
+    "LOG_LEVEL": "INFO"
+  },
+  "volumes": [
+    {
+      "name": "model_cache",
+      "mountPath": "/app/.cache"
+    }
+  ]
+}
